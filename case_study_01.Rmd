@@ -15,8 +15,207 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
+```{r libraries}
+library(class)
+library(caret)
+library(e1071)
+library(ggplot2)
+library(tidyverse)
+
+theme_set(
+  theme_minimal()
+)
+```
+
 ```{r}
-beer_df = read.csv("")
+beer_df = read.csv("/Users/Julia/Documents/SMU/DataSci/Case Study 01/Beers.csv")
+breweries_df = read.csv("/Users/Julia/Documents/SMU/DataSci/Case Study 01/Breweries.csv")
+
+#data cleaning
+colnames(breweries_df) <- c("Brewery_id", "Brewery", "City", "State")
+breweries_df$State <- str_replace_all(breweries_df$State, " ", "")
+
+#~~~debug~~~
+beer_df
+breweries_df
+```
+
+
+```{r Problem 1}
+tab_1 = table(breweries_df$State)
+
+fig_1 = ggplot(data=breweries_df) +
+  geom_bar(mapping = aes(x=State, fill=State)) +
+    #labels
+  labs(title = "Figure 1",
+       subtitle = "Number of Breweries by State",
+       caption = "Source: Breweries.csv \n Author: Jules Stacy",
+       x = "States",
+       y = "Count of Breweries")
+
+#Graphic Calls
+tab_1
+fig_1
+
+#this table includes breweries that have multiple locations in each state
+```
+
+
+```{r Problem 2}
+#perform merge
+mbeer_orig = merge(beer_df, breweries_df, by="Brewery_id")
+
+#duplicate beers were found, cleaning
+mbeer <- mbeer_orig %>% distinct(Name, ABV, IBU, Style, Ounces, .keep_all=TRUE)
+
+#Data was cleaned so that duplicates were removed based on name, abv, ibu, and product size in ounces
+
+#~~~debug~~~
+#beer_df$Brewery_id
+#breweries_df$Brew_ID
+dupes <- mbeer[duplicated(mbeer$Name),]
+dupes <- dupes[order(dupes$Name),]
+distinct
+t_df = data.frame()
+t_df
+dupes
+mbeer %>% filter(Name=="#9")
+mbeer_orig
+```
+
+
+```{r Problem 3}
+#Pertinent information will be kept for individual analyses:
+#For analyses involving ABV, NA values for ABV will be filtered out
+#For analyses involving IBU, NA values for IBU will be filtered out
+#For analyses comparing IBU and ABV, NA values for either variable will be filtered out
+```
+
+
+```{r Custom Functions}
+median_exNA<-function(input) {
+   median(input[which(!is.na(input))])
+}
+
+max_exNA<-function(input) {
+   max(input[which(!is.na(input))])
+}
+```
+
+```{r Problem 4}
+
+
+
+
+abv_state <- aggregate(ABV ~ State, mbeer, median_exNA)
+ibu_state <- aggregate(IBU ~ State, mbeer, median_exNA)
+
+#Plot: ABV by State
+fig_2 = ggplot(data=abv_state, aes(x=State, y=ABV, fill=State)) +
+  geom_bar(stat="identity") +
+    #labels
+  labs(title = "Figure 2",
+       subtitle = "Median ABV by State",
+       caption = "Source: Breweries.csv \n Author: Jules Stacy",
+       x = "States",
+       y = "Median ABV")
+
+#Plot: IBU by State
+fig_3 = ggplot(data=ibu_state, aes(x=State, y=IBU, fill=State)) +
+  geom_bar(stat="identity") +
+    #labels
+  labs(title = "Figure 3",
+       subtitle = "Median IBU by State",
+       caption = "Source: Breweries.csv \n Author: Jules Stacy",
+       x = "States",
+       y = "Median IBU")
+
+#~~~debug~~~
+fig_3
+fig_2
+abv_state
+mbeer %>% filter(State=="AK")
+
+```
+
+
+```{r Problem 5}
+abv_max <- aggregate(ABV ~ State, mbeer, max_exNA)
+ibu_max <- aggregate(IBU ~ State, mbeer, max_exNA)
+
+
+#Colorado has the beer with the highest ABV at 0.128
+#Oregon has the most bitter beer with an IBU of 138
+
+#~~~debug~~~
+max_exNA(mbeer$IBU)
+ibu_max
+```
+
+
+```{r Code I want to reference later, include=off}
+##Plot: ABV by State
+#fig_4 = ggplot(mbeer) +
+#  geom_density(aes(ABV, fill=as.factor(ABV))) +
+#    #labels
+#  labs(title = "Figure 4",
+#       subtitle = "Distribution of ABV",
+#       caption = "Source: Breweries.csv \n Author: #Jules Stacy",
+#       x = "ABV",
+#       y = "Percentage")
+```
+
+```{r Problem 6}
+#Plot: ABV by State
+fig_4 = ggplot(mbeer) +
+  geom_density(aes(ABV), color="deeppink3") +
+    #labels
+  labs(title = "Figure 4",
+       subtitle = "Distribution of ABV",
+       caption = "Source: Breweries.csv \n Author: Jules Stacy",
+       x = "ABV",
+       y = "Percentage")
+
+
+sapply(mbeer$ABV, mean, na.rm=TRUE)
+sapply(mbeer$ABV, sd, na.rm=TRUE)
+sapply(mbeer$ABV, var, na.rm=TRUE)
+sapply(mbeer$ABV, min, na.rm=TRUE)
+sapply(mbeer$ABV, max, na.rm=TRUE)
+sapply(mbeer$ABV, median, na.rm=TRUE)
+sapply(mbeer$ABV, range, na.rm=TRUE)
+sapply(mbeer$ABV, quantile, na.rm=TRUE)
+
+
+mean(mbeer$ABV[which(!is.na(mbeer$ABV))])
+median(mbeer$ABV[which(!is.na(mbeer$ABV))])
+sd(mbeer$ABV[which(!is.na(mbeer$ABV))])
+var(mbeer$ABV[which(!is.na(mbeer$ABV))])
+
+summary(mbeer$ABV[which(!is.na(mbeer$ABV))])
+
+#~~debug~~
+fig_4
+
+```
+
+
+```{r Problem 7}
+fig_5 = ggplot(mbeer) +
+  geom_point(aes(ABV, IBU), color="deeppink3") +
+    #labels
+  labs(title = "Figure 5",
+       subtitle = "ABV Versus IBU",
+       caption = "Source: Breweries.csv \n Author: Jules Stacy",
+       x = "ABV",
+       y = "IBU")
+#~~debug~~
+fig_5
+
+```
+
+
+```{r Problem 8}
 
 
 ```
