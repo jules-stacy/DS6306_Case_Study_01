@@ -13,8 +13,7 @@ All code used will be compiled and displayed in the final document. Output for c
 #knitr::opts_chunk$set(eval = TRUE, echo = TRUE, results = "hide")
 
 The following code loads the libraries and sets the theme for the document:
-```{r libraries}
-knitr::opts_chunk$set(eval = TRUE, echo = TRUE, results = "hide")
+```{r libraries, eval = TRUE, echo = TRUE, message=FALSE, results = "hide"}
 library(multcomp)
 library(plotly)
 library(class)
@@ -22,6 +21,7 @@ library(caret)
 library(e1071)
 library(ggplot2)
 library(tidyverse)
+
 
 theme_set(
   theme_minimal()
@@ -54,17 +54,21 @@ fig_1 = ggplot(data=breweries_df) +
 
 ```
 ```{r Table 1}
-tab_1
+tx <- tab_1
+tx[order(tx)]
+
 ```
+
 Table 1 is a table showing the number of breweries in each state. This includes breweries with multiple locations throughout the state.
 
 ```{r Figure 1}
-fig_1
+fig_1 + theme(legend.position = "none", axis.text.x = element_text(angle = 90, hjust = 1))
 ```
-Figure one is a graphical representation of the same data. We can see that Colorado, California, and Minnesota have the highest number of breweries, respectively.
+
+Figure one is a graphical representation of the same data. We can see that Colorado, California, and Michigan have the highest number of breweries, respectively.
 
 The following code merges the provided csv's as requested.
-```{r Problem 2}
+```{r Problem 2, eval = TRUE, echo = TRUE, message=FALSE, results = "hide"}
 knitr::opts_chunk$set(eval = TRUE, echo = TRUE, results = "hide")
 #perform merge
 mbeer_orig = merge(beer_df, breweries_df, by="Brewery_id")
@@ -78,17 +82,18 @@ mbeer <- mbeer_orig %>% distinct(Name, ABV, IBU, Style, Ounces, .keep_all=TRUE)
 head(mbeer, 6)
 tail(mbeer, 6)
 ```
-Above are Tables 2 and 3; the first and last 6 rows from the merged data set, respectively.
+
+Above are Tables 2 and 3 (not shown); the first and last 6 rows from the merged data set, respectively.
 
 ```{r Problem 3}
 ```
+
 Dealing with missing (or NA) values:
-Analyses dealing solely with ABV will include beers with missing IBU values and vice versa. Analyses dealing with both ABV and IBU will not include any beers that have NA values for either of these variables.
+Analyses dealing solely with ABV can include beers with missing IBU values and vice versa. Analyses dealing with both ABV and IBU will not include any beers that have NA values for either of these variables.
 
 
 The following code are custom functions to calculate the median and max values while filtering out NA values.
-```{r Custom Functions}
-knitr::opts_chunk$set(eval = TRUE, echo = TRUE, results = "hide")
+```{r Custom Functions, eval = TRUE, echo = TRUE, message=FALSE, results = "hide"}
 median_exNA<-function(input) {
    median(input[which(!is.na(input))])
 }
@@ -126,13 +131,30 @@ fig_3 = ggplot(data=ibu_state, aes(x=State, y=IBU, fill=State)) +
        y = "Median IBU")
 ```
 
-```{r Table 4: Mean ABV by State}
-head(abv_state, 6)
+```{r Table 4: Median ABV by State}
+(head(abv_state, 6))
 ```
+State   ABV
+AK    0.056
+AL    0.060
+AR    0.052
+AZ    0.055
+CA    0.058
+CO    0.060
+
 Table 4, above, is the first six rows showing the median ABV by state.
 ```{r Table 5: Mean IBU by State}
 head(ibu_state, 6)
 ```
+
+State IBU
+1	AK	46.0		
+2	AL	43.0		
+3	AR	39.0		
+4	AZ	20.5		
+5	CA	42.0		
+6	CO	40.0	
+
 Table 5, above, is the first six rows showing the median ABV by state.
 ```{r Figure 2}
 fig_2 + theme(legend.position = "none", axis.text.x = element_text(angle = 90, hjust = 1))
@@ -150,13 +172,13 @@ abv_max <- aggregate(ABV ~ State, mbeer, max_exNA)
 ibu_max <- aggregate(IBU ~ State, mbeer, max_exNA)
 #NA values have been removed
 ```
+
 Colorado has the beer with the highest ABV at 0.128.
 Oregon has the most bitter beer with an IBU of 138.
 
 
 The code below generates Figure 4, generates a datset without NA values, and calls the summary statistics for ABV. The data includes beers that have missing IBU values.
-```{r Problem 6}
-knitr::opts_chunk$set(eval = TRUE, echo = TRUE, results = "hide")
+```{r Problem 6, eval = TRUE, echo = TRUE, message=FALSE, results = "hide"}
 #Plot: ABV by State
 fig_4 = ggplot(mbeer) +
   geom_density(aes(ABV), color="deeppink3") +
@@ -198,6 +220,7 @@ Based on these values, we can expect 95% of beers to fall between 0.03282208 and
 ```{r Figure 4}
 fig_4
 ```
+
 Figure 4, above, shows a density curve for ABV. We can see that the distribution is approximately normal with right skew, with the mean centered at 0.0599. There appear to be additional popular ABV targets at approximately 0.06, 0.08, and 0.095, as evidenced by the spikes in the distribution at those numbers.
 
 The code below calculates the linear model for ABV versus IBU, and generates Figure 5. The data does not include beers that have missing ABV or IBU values.
@@ -225,6 +248,7 @@ fig_5 = ggplot(mbeer) +
 ```{r Figure 5}
 fig_5
 ```
+
 Figure 5, above, is a scatterplot of ABV versus IBU for the beers in the dataset that do not have missing values for either ABV or IBU. Visually, it appears that the data are related. According to analytical software there is a best-fit line with an equation of y= 0.0003506x + 0.0450713 and a correlation coefficient of 0.6690977. This means that 67% of the data is explained by the fitted line, and therefore ABV and IBU are moderately related.
 
 
@@ -259,15 +283,17 @@ fig_6 <- ggplot(beer_g, aes(x=IBU, y=ABV)) +
        x = "IBU",
        y = "ABV")
 ```
+
 ```{r Figure 6}
 fig_6
 ```
+
 Figure 6, above, is a scatterplot of ABV versus IBU for IPA's and Ales. The two different types of beer are represented on the graph by different colors. We can immediately see that there is a difference between the two types of beer, where Ale tends to be less bitter and have a lower ABV, and IPA tends to be more bitter and have a higher ABV.
 
 The code below finds the best k-value for running a k-nearest neighbors algorithm, where each point is compared with its nearest neighbors to determine a specific statistic (below, that statistic is IPA or Ale). The k-value determines how many nearby points are compared.
 
 For the training-test sets, a 33% train 66% test split was used.
-```{r Problem 8.2}
+```{r Problem 8.2, eval = TRUE, echo = TRUE, message=FALSE, results = "hide"}
 #beer_k is now a list of IPAs and Ales with ABV values, IBU values, and no NA values. Now it's time to develop a training and test set. Training set taken from cleaned data
 mbeer$isipa <- as.numeric(str_detect(mbeer$Style, "IPA"))
 mbeer$isale <- as.numeric(str_detect(mbeer$Style, "Ale"))
@@ -342,11 +368,13 @@ fig_8 <- ggplot(data=accs2, aes(x=k, y=accuracy)) +
 ```{r Figure 7}
 fig_7
 ```
+
 Figure 7, above, is a graph of the average accuracy of 25 values of k looped 100 times using train-and-test. Based on the results of this graph I chose a k of 19 for my train-test analysis.
 
 ```{r Figure 8}
 fig_8
 ```
+
 Figure 8, above, is a graph of the average accuracy of 25 values of k looped 100 times using leave-one-out analysis. Based on the results of this graph I chose a k of 9 for my leave-one-out analysis.
 
 
@@ -363,16 +391,19 @@ The code below calculates the k-nearest neighbors test and train and leave one o
   classifications2 = knn.cv(beer_k[,c(1,2)], beer_k[,3], prob=TRUE, k=8)
   sur2 = table(beer_k[,3],classifications2)
   CM2 = confusionMatrix(sur2)
+```
   
 ```{r Table 6}
   CM1
 ```
-Table 6, above, are the results of the train-and-test algorithm. Using this algorithm the computer was able to correctly type beers as either IPA or Ale 81.95% of the time based on ABV and IBU.
+
+Table 6, above (not shown), are the results of the train-and-test algorithm. Using this algorithm the computer was able to correctly type beers as either IPA or Ale 81.95% of the time based on ABV and IBU.
 
 ```{r Table 7}
   CM2
 ```
-Table 7, above, shows the results of the leave-one-out algorithm. Using this method the computer was able to correctly type beers as either IPA or Ale 84.6% of the time based on ABV and IBU.
+
+Table 7, above (not shown), shows the results of the leave-one-out algorithm. Using this method the computer was able to correctly type beers as either IPA or Ale 84.6% of the time based on ABV and IBU.
 
 
 The code below looks at the most common words chosen when naming beers, and generates Figure 9.
@@ -406,13 +437,13 @@ fig_9 <- ggplot2::ggplot(topwords, aes(x=name_words, y=Freq, fill=name_words)) +
 ```{r Figure 9}
 fig_9
 ```
+
 Figure 9, above, shows the most common words chosen when naming a beer. The most common naming convention for beers is to name it by the type of beer; this would be why "Ale" is the top word choice when naming a beer. Other notable inclusions are "of", which signifies that the beer has a complex name that may not attributed to its type, "the" versus "The", which specifies that some beers are named starting with the word "The" and therefore have a more title-esque name whereas some beers are named with "the" in the middle of the beer, again hinting at names not related to beer type, and various years that may have been particularly good hops growing seasons or experimental years; particularly 2012. Additionally there are words that suggest that aged beers are popular, such as "Barrel" and "Old."
 
 
 The code below conducts an analysis of variance on the dataset in order to see if there are any significant differences in ABV or IBU from state to state.
-```{r Problem 9.2}
-knitr::opts_chunk$set(eval = TRUE, echo = FALSE, results = "hide")
-attach(mbeer)
+```{r Problem 9.2, eval = TRUE, echo = TRUE, message=FALSE, results = "hide"}
+attach(nbeer)
 ABVfit <- aov(ABV ~ State)
 TukeyHSD(ABVfit)
 
@@ -437,10 +468,11 @@ ibu_tukey$States <- rownames(ibu_tukey)
 abv_tukey %>% filter(p_adj < 0.05)
 
 
+
 ```
 
 
-Table 8, above, shows the states between which there is a statistically significant difference in the mean alcohol content of their beer. Based on the results of this table there could be a potential market for Colorado or Indiana beer in both Massachusetts and Wisconsin.
+Table 8, above (not shown), shows the states between which there is a statistically significant difference in the mean alcohol content of their beer. Based on the results of this table there could be a potential market for stronger Colorado  beers in both Missouri and Wisconsin.
 
 
 
@@ -448,7 +480,8 @@ Table 8, above, shows the states between which there is a statistically signific
 ibu_tukey %>% filter(p_adj < 0.05)
 
 ```
-Table 9, above, shows the states between which there is a statistically significant difference in the mean IBU of their beer. The resuls of this table show that Wisconsinites prefer beer that is less bitter than that of California, Colorado, Minnesota, or Oregon. If Budweiser were to open a brewery in Wisconsin, I would advise brewing low-IBU beers.
+
+Table 9, above (not shown), shows the states between which there is a statistically significant difference in the mean IBU of their beer. The resuls of this table show that Wisconsin breweries brew less bitter beer than Oregon, California, Colorado, and Minnesota. If Budweiser were to open a brewery in Wisconsin, I would advise brewing low-IBU beers.
 
 
 
