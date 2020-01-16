@@ -16,6 +16,8 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ```{r libraries}
+
+library(plotly)
 library(class)
 library(caret)
 library(e1071)
@@ -131,8 +133,8 @@ fig_3 = ggplot(data=ibu_state, aes(x=State, y=IBU, fill=State)) +
        y = "Median IBU")
 
 #~~~debug~~~
-fig_3
 fig_2
+fig_3
 abv_state
 mbeer %>% filter(State=="AK")
 
@@ -215,86 +217,7 @@ fig_5
 ```
 
 
-```{r function call}
-#highest_k = function(df, goalvar, column_list=c()){
-#  hi_k = data.frame(accuracy = c(numeric(1000)), k = #c(numeric(1000)))
-#  for (j in 1:1000) {
-#    #find the optimal k value to test
-#    accs = data.frame(accuracy = numeric(30), k = #numeric(30))
-#
-#    for(i in 1:30){
-#      predict = knn.cv(df[,column_list], goalvar, #prob=TRUE, k=i)
-#      predict_check = table(goalvar,predict)
-#      CM = confusionMatrix(predict_check)
-#      accs$accuracy[i] = CM$overall[1]
-#      accs$k[i] = i
-#}
-#
-#    hi_k[j,] = accs[which.max(accs$accuracy),]
-#}
-#
-#
-#  plot(accs$k,accs$accuracy, type = "l", xlab = "k")
-#
-#}
 
-
-#-------------------------------------
-#-----define parameters-----
-kmax=90
-loops=100
-hyperparameter_k <- function(kmax=90, loops=100, train, test, full){
-accs1 = data.frame(k = numeric(kmax), accuracy = numeric(kmax), accuracy2=numeric(kmax))
-accs2 = data.frame(k = numeric(kmax), accuracy = numeric(kmax), accuracy2=numeric(kmax))
-
-#-----define loop-----
-#housed processes to speed compile time
-#each loop processes train vs test and then icv
-for(j in 1:loops){
-for(i in 1:kmax)
-{
-  classifications1 = knn(train[,c(1,2)],test[,c(1,2)],train[,3], prob = TRUE, k = i)
-  sur1 = table(test[,3],classifications1)
-  CM1 = confusionMatrix(sur1)
-  accs1$accuracy[i] = accs1$accuracy[i] + CM1$overall[1]
-  accs1$k[i] = i
-  
-  classifications2 = knn.cv(full[,c(1,2)], full[,3], prob=TRUE, k=i)
-  sur2 = table(full[,3],classifications2)
-  CM2 = confusionMatrix(sur2)
-  accs2$accuracy[i] = accs2$accuracy[i] + CM2$overall[1]
-  accs2$k[i] = i
-  
-  }
-}
-
-#finish the calculation of averages
-accs1$accuracy <- accs1$accuracy/loops
-accs2$accuracy <- accs2$accuracy/loops
-
-accs <- merge(accs1$accuracy, accs2$accuracy)
-
-#-----build plots-----
-p1 <- ggplot(data=accs1, aes(x=k, y=accuracy)) +
-  geom_point() +
-  geom_text(aes(label=accs1$k), hjust=-.2, size=2.7)+
-  labs(title = "Scatterplot: Hyperparameter K Average Accuracies",
-       subtitle = "500 Iterations Using Train and Test Data",
-       caption = "Source: Iris Dataset \nAuthor: Jules Stacy",
-       x = "Hyperparameter K",
-       y = "Average Accuracy")
-
-p2 <- ggplot(data=accs2, aes(x=k, y=accuracy)) +
-  geom_point() +
-  geom_text(aes(label=accs2$k), hjust=-.2, size=2.7)+
-  labs(title = "Scatterplot: Hyperparameter K Average Accuracies",
-       subtitle = "500 Iterations Using Leave One Out Cross-Validation",
-       caption = "Source: Iris Dataset \nAuthor: Jules Stacy",
-       x = "Hyperparameter K",
-       y = "Average Accuracy")
-}
-#------------------------------------
-```
 
 
 ```{r Problem 8.1}
@@ -354,7 +277,7 @@ test <- setdiff(beer_k, train)
 
 #--------------HYPERPARAMETER K TESTING--------------
 #-----define parameters-----
-kmax=90
+kmax=25
 loops=100
 accs1 = data.frame(k = numeric(kmax), accuracy = numeric(kmax), accuracy2=numeric(kmax))
 accs2 = data.frame(k = numeric(kmax), accuracy = numeric(kmax), accuracy2=numeric(kmax))
@@ -407,10 +330,6 @@ fig_8 <- ggplot(data=accs2, aes(x=k, y=accuracy)) +
 #the best k for train-and-test is 19
 #the best k for leave-one-out is 8
 
-classifications1 = knn(train[,c(1,2)],test[,c(1,2)],train[,3], prob = TRUE, k = 18)
-sur1 = table(test[,3],classifications1)
-CM1 = confusionMatrix(sur1)
-
 
 #~~debug~~
 CM1
@@ -426,8 +345,54 @@ mbeer
 ```{r Problem 8.3}
 
 #code for test and train
-classifications1 = knn(train[,c(1,2)],test[,c(1,2)],train[,3], prob = TRUE, k = i)
+
+  classifications1 = knn(train[,c(1,2)],test[,c(1,2)],train[,3], prob = TRUE, k = 19)
   sur1 = table(test[,3],classifications1)
   CM1 = confusionMatrix(sur1)
 
-```{r}
+  
+  classifications2 = knn.cv(beer_k[,c(1,2)], beer_k[,3], prob=TRUE, k=8)
+  sur2 = table(beer_k[,3],classifications2)
+  CM2 = confusionMatrix(sur2)
+  
+  #~~debug~~
+  CM1
+  CM2
+```
+
+
+```{r Problem 9.1}
+
+mbeer <- mbeer[!duplicated(mbeer$Name),]
+
+x=c()
+for(i in 1:length(mbeer$Name)){
+  x <- paste(x, mbeer[i,2])
+}
+
+name_words <- str_split(x, "( )")
+gsub(" ", "", name_words)
+names_table <- sort(table(name_words), decreasing=T)
+names_table <- names_table[-58]
+namewords_great10 <- names_table[1:76]
+topwords <- as.data.frame(namewords_great10)
+
+fig_9 <- ggplot2::ggplot(topwords, aes(x=name_words, y=Freq, fill=name_words)) + geom_bar(width = 0.75,  stat = "identity", colour = "black", size = .3, las=0) +  ggtitle("Word Frequency") + theme(legend.position = "none", axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = NULL, y = NULL) + scale_y_log10()
+
+
+
+#~~~denug~~~
+fig_9
+topwords
+namewords_great10
+names_table
+length(mbeer$Name)
+duplicated(mbeer$Name)
+x <- paste(x, mbeer[1,2])
+```
+
+
+```{r Problem 9.2}
+fit <- aov(mbeer$ABV <- as.factor(mbeer$State))
+
+```
