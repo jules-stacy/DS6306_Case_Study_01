@@ -3,11 +3,59 @@ SMU DS 6306 Doing Data Science Case Study 1 by Jules Stacy
 
 Conclusions:
 1.   How many breweries are present in each state?
+DC	1
+ND	1
+SD	1
+WV	1
+AR	2
+DE	2
+MS	2
+NV	2
+AL	3
+KS	3
+NH	3
+NJ	3
+TN	3
+HI	4
+KY	4
+NM	4
+SC	4
+UT	4
+WY	4
+IA	5
+ID	5
+LA	5
+NE	5
+RI	5
+OK	6
+AK	7
+GA	7
+MD	7
+CT	8
+ME	9
+MO	9
+MT	9
+VT	10
+AZ	11
+MN	12
+FL	15
+OH	15
+NY	16
+VA	16
+IL	18
+NC	19
+WI	20
+IN	22
+MA	23
+WA	23
+PA	25
+TX	28
+OR	29
+MI	32
+CA	39
+CO	47
 
-DC ND SD WV AR DE MS NV AL KS NH NJ TN HI KY NM SC UT WY IA ID LA NE RI OK AK 
- 1  1  1  1  2  2  2  2  3  3  3  3  3  4  4  4  4  4  4  5  5  5  5  5  6  7 
-GA MD CT ME MO MT VT AZ MN FL OH NY VA IL NC WI IN MA WA PA TX OR MI CA CO 
- 7  7  8  9  9  9 10 11 12 15 15 16 16 18 19 20 22 23 23 25 28 29 32 39 47 
+
 
 3.   Address the missing values in each column.
 Dealing with missing (or NA) values:
