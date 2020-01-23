@@ -42,9 +42,12 @@ breweries_df$State <- str_replace_all(breweries_df$State, " ", "")
 The following code generates table 1 and figure 1.
 ```{r Problem 1}
 tab_1 = table(breweries_df$State)
+breweries_1 <- as.data.frame(tab_1)
+names(breweries_1) <- c("State", "Count")
+breweries_1 <- breweries_1[order(breweries_1$Count),]
 
-fig_1 = ggplot(data=breweries_df) +
-  geom_bar(mapping = aes(x=State, fill=State)) +
+fig_1 = ggplot(data=breweries_1, ) +
+  geom_bar(mapping = aes(x=reorder(State, Count), y=Count, fill=State), stat="identity") +
     #labels
   labs(title = "Figure 1",
        subtitle = "Number of Breweries by State",
@@ -79,7 +82,7 @@ mbeer <- mbeer_orig %>% distinct(Name, ABV, IBU, Style, Ounces, .keep_all=TRUE)
 #Data was cleaned so that duplicates were removed based on name, abv, ibu, and product size in ounces
 ```
 ```{r Tables 2 and 3}
-head(mbeer, 6)
+knitr::kable(head(mbeer, 6))
 tail(mbeer, 6)
 ```
 
@@ -109,9 +112,11 @@ abv_state <- aggregate(ABV ~ State, mbeer, median_exNA)
 ibu_state <- aggregate(IBU ~ State, mbeer, median_exNA)
 #NA values have been removed
 
+names(abv_state)
+
 
 #Plot: ABV by State
-fig_2 = ggplot(data=abv_state, aes(x=State, y=ABV, fill=State)) +
+fig_2 = ggplot(data=abv_state, aes(x=reorder(State, ABV), y=ABV, fill=State)) +
   geom_bar(stat="identity") +
     #labels
   labs(title = "Figure 2",
@@ -121,7 +126,7 @@ fig_2 = ggplot(data=abv_state, aes(x=State, y=ABV, fill=State)) +
        y = "Median ABV")
 
 #Plot: IBU by State
-fig_3 = ggplot(data=ibu_state, aes(x=State, y=IBU, fill=State)) +
+fig_3 = ggplot(data=ibu_state, aes(x=reorder(State, IBU), y=IBU, fill=State)) +
   geom_bar(stat="identity") +
     #labels
   labs(title = "Figure 3",
@@ -132,7 +137,8 @@ fig_3 = ggplot(data=ibu_state, aes(x=State, y=IBU, fill=State)) +
 ```
 
 ```{r Table 4: Median ABV by State}
-(head(abv_state, 6))
+abv_state <- abv_state[order(abv_state$ABV),]
+knitr::kable((head(abv_state, 6)))
 ```
 State   ABV
 AK    0.056
@@ -144,7 +150,9 @@ CO    0.060
 
 Table 4, above, is the first six rows showing the median ABV by state.
 ```{r Table 5: Mean IBU by State}
+ibu_state <- ibu_state[order(ibu_state$IBU),]
 head(ibu_state, 6)
+
 ```
 
 State IBU
@@ -321,6 +329,8 @@ accs2 = data.frame(k = numeric(kmax), accuracy = numeric(kmax), accuracy2=numeri
 #housed processes to speed compile time
 #each loop processes train vs test and then icv
 for(j in 1:loops){
+  train <- beer_k[sample(nrow(beer_k), size=311),]
+  test <- setdiff(beer_k, train)
 for(i in 1:kmax)
 {
   classifications1 = knn(train[,c(1,2)],test[,c(1,2)],train[,3], prob = TRUE, k = i)
@@ -375,7 +385,7 @@ Figure 7, above, is a graph of the average accuracy of 25 values of k looped 100
 fig_8
 ```
 
-Figure 8, above, is a graph of the average accuracy of 25 values of k looped 100 times using leave-one-out analysis. Based on the results of this graph I chose a k of 9 for my leave-one-out analysis.
+Figure 8, above, is a graph of the average accuracy of 25 values of k looped 100 times using leave-one-out analysis. Based on the results of this graph I chose a k of 5 for my leave-one-out analysis.
 
 
 The code below calculates the k-nearest neighbors test and train and leave one out accuracies for the dataset in order to determine computer accuracy at comparing IPA's and Ales.
@@ -388,7 +398,7 @@ The code below calculates the k-nearest neighbors test and train and leave one o
   CM1 = confusionMatrix(sur1)
 
 #code for leave one out
-  classifications2 = knn.cv(beer_k[,c(1,2)], beer_k[,3], prob=TRUE, k=8)
+  classifications2 = knn.cv(beer_k[,c(1,2)], beer_k[,3], prob=TRUE, k=5)
   sur2 = table(beer_k[,3],classifications2)
   CM2 = confusionMatrix(sur2)
 ```
