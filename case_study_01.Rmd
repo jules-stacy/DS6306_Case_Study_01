@@ -9,6 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+https://youtu.be/4s90tmhPOvw
+
 All code used will be compiled and displayed in the final document. Output for certain code chunks will be hidden using the following code:
 #knitr::opts_chunk$set(eval = TRUE, echo = TRUE, results = "hide")
 
@@ -82,7 +84,7 @@ mbeer <- mbeer_orig %>% distinct(Name, ABV, IBU, Style, Ounces, .keep_all=TRUE)
 #Data was cleaned so that duplicates were removed based on name, abv, ibu, and product size in ounces
 ```
 ```{r Tables 2 and 3}
-knitr::kable(head(mbeer, 6))
+head(mbeer, 6)
 tail(mbeer, 6)
 ```
 
@@ -112,9 +114,6 @@ abv_state <- aggregate(ABV ~ State, mbeer, median_exNA)
 ibu_state <- aggregate(IBU ~ State, mbeer, median_exNA)
 #NA values have been removed
 
-names(abv_state)
-
-
 #Plot: ABV by State
 fig_2 = ggplot(data=abv_state, aes(x=reorder(State, ABV), y=ABV, fill=State)) +
   geom_bar(stat="identity") +
@@ -138,32 +137,18 @@ fig_3 = ggplot(data=ibu_state, aes(x=reorder(State, IBU), y=IBU, fill=State)) +
 
 ```{r Table 4: Median ABV by State}
 abv_state <- abv_state[order(abv_state$ABV),]
-knitr::kable((head(abv_state, 6)))
+head(abv_state, 6)
 ```
-State   ABV
-AK    0.056
-AL    0.060
-AR    0.052
-AZ    0.055
-CA    0.058
-CO    0.060
 
-Table 4, above, is the first six rows showing the median ABV by state.
+Table 4, (not shown), is the first six rows showing the median ABV by state.
 ```{r Table 5: Mean IBU by State}
 ibu_state <- ibu_state[order(ibu_state$IBU),]
 head(ibu_state, 6)
 
 ```
 
-State IBU
-1	AK	46.0		
-2	AL	43.0		
-3	AR	39.0		
-4	AZ	20.5		
-5	CA	42.0		
-6	CO	40.0	
 
-Table 5, above, is the first six rows showing the median ABV by state.
+Table 5, (not shown), is the first six rows showing the median ABV by state.
 ```{r Figure 2}
 fig_2 + theme(legend.position = "none", axis.text.x = element_text(angle = 90, hjust = 1))
 ```
@@ -417,21 +402,21 @@ Table 7, above (not shown), shows the results of the leave-one-out algorithm. Us
 
 
 The code below looks at the most common words chosen when naming beers, and generates Figure 9.
-```{r Problem 9.1}
+```{r Problem 9.1, eval = TRUE, echo = FALSE, message=FALSE, results = "hide"}
 
-mbeer <- mbeer[!duplicated(mbeer$Name),]
+invisible(mbeer <- mbeer[!duplicated(mbeer$Name),])
 
 x=c()
 for(i in 1:length(mbeer$Name)){
-  x <- paste(x, mbeer[i,2])
+  invisible(x <- paste(x, mbeer[i,2]))
 }
 
-name_words <- str_split(x, "( )")
-gsub(" ", "", name_words)
-names_table <- sort(table(name_words), decreasing=T)
-names_table <- names_table[-58]
-namewords_great10 <- names_table[1:76]
-topwords <- as.data.frame(namewords_great10)
+invisible(name_words <- str_split(x, "( )"))
+invisible(gsub(" ", "", name_words))
+invisible(names_table <- sort(table(name_words), decreasing=T))
+invisible(names_table <- names_table[-58])
+invisible(namewords_great10 <- names_table[1:76])
+invisible(topwords <- as.data.frame(namewords_great10))
 
 fig_9 <- ggplot2::ggplot(topwords, aes(x=name_words, y=Freq, fill=name_words)) + 
   geom_bar(width = 0.75,  stat = "identity", colour = "black", size = .3, las=0) +  
@@ -442,6 +427,8 @@ fig_9 <- ggplot2::ggplot(topwords, aes(x=name_words, y=Freq, fill=name_words)) +
        x = "Words",
        y = "Count") +
   scale_y_log10()
+
+
 ```
 
 ```{r Figure 9}
@@ -454,12 +441,12 @@ Figure 9, above, shows the most common words chosen when naming a beer. The most
 The code below conducts an analysis of variance on the dataset in order to see if there are any significant differences in ABV or IBU from state to state.
 ```{r Problem 9.2, eval = TRUE, echo = TRUE, message=FALSE, results = "hide"}
 attach(nbeer)
-ABVfit <- aov(ABV ~ State)
-TukeyHSD(ABVfit)
+invisible(ABVfit <- aov(ABV ~ State))
+invisible(TukeyHSD(ABVfit))
 
-ABVfit <- aov(ABV ~ State)
+invisible(ABVfit <- aov(ABV ~ State))
 abv_tukey = TukeyHSD(ABVfit)
-abv_tukey <- as.data.frame(abv_tukey$State)
+invisible(abv_tukey <- as.data.frame(abv_tukey$State))
 names(abv_tukey) = c( "diff", "lwr", "upr", "p_adj")
 abv_tukey$States <- rownames(abv_tukey)
 
